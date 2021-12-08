@@ -22,24 +22,15 @@
     (let [one (first (get by-count 2))
           four (first (get by-count 4))
           seven (first (get by-count 3))
-          eight (first (get by-count 7))]
-      (let [nine (first-superset four (get by-count 6))
-            six (first-not-superset one (get by-count 6))
-            three (first-superset one (get by-count 5))]
-        (let [five (first-subset six (get by-count 5))]
-          (let [two (first (filter
-                             #(and
-                                (not= %1 three)
-                                (not= %1 five))
-                             (get by-count 5)))
-                zero (first (filter
-                             #(and
-                                (not= %1 six)
-                                (not= %1 nine))
-                             (get by-count 6)))
-                ]
-            {zero 0, one 1, two 2, three 3, four 4
-             five 5, six 6, seven 7, eight 8, nine 9}))))))
+          eight (first (get by-count 7))
+          nine (first-superset four (get by-count 6))
+          six (first-not-superset one (get by-count 6))
+          three (first-superset one (get by-count 5))
+          five (first-subset six (get by-count 5))
+          two (first (filter #(and (not= %1 three) (not= %1 five)) (get by-count 5)))
+          zero (first (filter #(and (not= %1 six) (not= %1 nine)) (get by-count 6)))]
+      {zero 0, one 1, two 2, three 3, four 4
+       five 5, six 6, seven 7, eight 8, nine 9})))
 
 
 (defn main [input]
