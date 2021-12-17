@@ -101,14 +101,20 @@ struct Map<'a> {
     data: &'a str,
     rows: usize,
     cols: usize,
+    window_rows: usize,
+    window_cols: usize,
 }
 
 impl Map<'_> {
     fn from_string<'a>(string: &'a str) -> Map<'a> {
+        let rows: usize = string.lines().count();
+        let cols: usize = string.lines().nth(0).unwrap().chars().count();
         Map {
             data: string,
-            rows: string.lines().count(),
-            cols: string.lines().nth(0).unwrap().chars().count(),
+            rows: rows * 5,
+            cols: cols * 5,
+            window_rows: rows,
+            window_cols: cols,
         }
     }
 
@@ -132,25 +138,54 @@ impl Map<'_> {
 
     fn get_risk(&self, point: Point) -> u32 {
         let pos = self.point_to_pos(point);
-        self.data[pos..pos + 1].parse().unwrap()
+        match self.data[pos..pos + 1].parse::<u32>().unwrap()
+            + (point.0 / self.window_cols) as u32
+            + (point.1 / self.window_rows) as u32
+        {
+            // I'm over it, why not just wrap to 0? T___T
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            5 => 5,
+            6 => 6,
+            7 => 7,
+            8 => 8,
+            9 => 9,
+            10 => 1,
+            11 => 2,
+            12 => 3,
+            13 => 4,
+            14 => 5,
+            15 => 6,
+            16 => 7,
+            17 => 8,
+            18 => 9,
+            a => panic!("haaaaaa! {}", a),
+        }
     }
 
     fn point_to_pos(&self, point: Point) -> usize {
-        let (col, row) = point;
-        assert!(col < self.cols);
-        assert!(row < self.rows);
-        (row * self.cols) + col + (row + 1 / self.rows)
+        let col = point.0 % self.window_cols;
+        let row = point.1 % self.window_rows;
+        assert!(col < self.window_cols);
+        assert!(row < self.window_rows);
+        (row * self.window_cols) + col + (row + 1 / self.window_rows)
     }
 
     fn draw(&self, path: Vec<Point>) {
-        let path: HashSet<usize> = path.iter().map(|point| self.point_to_pos(*point)).collect();
+        let path: HashSet<Point> = path.iter().map(|point| *point).collect();
 
-        for (addr, c) in self.data.chars().enumerate() {
-            if path.contains(&addr) {
-                print!(" \u{001b}[1m\u{001b}[34m{}\u{001b}[0m", c);
-            } else {
-                print!(" {}", c);
+        for row in 0..self.rows {
+            for col in 0..self.cols {
+                let risk = self.get_risk((col, row));
+                if path.contains(&(col, row)) {
+                    print!(" \u{001b}[1m\u{001b}[34m{}\u{001b}[0m", risk);
+                } else {
+                    print!(" {}", risk);
+                }
             }
+            print!("\n");
         }
     }
 }
